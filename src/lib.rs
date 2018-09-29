@@ -40,7 +40,7 @@ use interfaces::*;
 pub struct ClientVar {
     /// 汎用的に利用できるハッシュマップ。
     #[allow(dead_code)]
-    properties: HashMap<String, String>,
+    pub properties: HashMap<String, String>,
 }
 impl ClientVar {
     pub fn new() -> ClientVar {
