@@ -3,10 +3,16 @@ use std::any::Any; // https://stackoverflow.com/questions/33687447/how-to-get-a-
 /**
  * メッセージ受信。
  */
-pub type Receiver = fn(connection_number: i64, message: &str, res: &mut Response);
+pub type Receiver = fn(req: &Request, res: &mut Response);
 
-pub fn empty_receiver(connection_number: i64, message: &str, _res: &mut Response) {
-    println!("empty_receiver<{} {}", connection_number, message);
+pub fn empty_receiver(req: &Request, _res: &mut Response) {
+    println!("empty_receiver<{} {}", req.get_connection_number(), req.get_message());
+}
+
+pub trait Request {
+    fn as_mut_any(&mut self) -> &mut dyn Any; // トレイトを実装している方を返すのに使う。
+    fn get_connection_number(&self) -> i64;
+    fn get_message(&self) -> &str;
 }
 
 /**

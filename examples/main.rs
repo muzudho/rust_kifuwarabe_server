@@ -40,13 +40,13 @@ fn main() {
 /**
  * クライアントからの入力は このメソッド内で処理する。
  */
-fn default_receiver(connection_number: i64, message: &str, res: &mut Response) {
-    println!("<{} {}", connection_number, message);
+fn default_receiver(req: &Request, res: &mut Response) {
+    println!("<{} {}", req.get_connection_number(), req.get_message());
 
-    match message {
+    match req.get_message() {
         "LOGIN kifuwarabe a" => res.set_message("LOGIN:kifuwarabe OK"),
         _ => {
-            println!("<{} Not match: [{}]", connection_number, message);
+            println!("<{} Not match: [{}]", req.get_connection_number(), req.get_message());
         }
     }
 }

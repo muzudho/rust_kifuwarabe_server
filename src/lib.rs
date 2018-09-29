@@ -62,6 +62,32 @@ impl Default for Server {
     }
 }
 
+/// リクエスト。
+pub struct RequestStruct {
+    pub message: String, // String型は長さが可変なので、固定長のBoxでラップする。
+    pub connection_number: i64,
+}
+impl RequestStruct {
+    fn new() -> RequestStruct {
+        RequestStruct {
+            message: "".to_string(),
+            connection_number: -1,
+        }
+    }
+}
+impl Request for RequestStruct {
+    fn as_mut_any(&mut self) -> &mut dyn Any {
+        self
+    }
+    fn get_connection_number(&self) -> i64 {
+        self.connection_number
+    }
+    fn get_message(&self) -> &str {
+        &self.message
+    }
+}
+
+/// レスポンス。
 pub struct ResponseStruct {
     pub message: String,
 }
@@ -146,6 +172,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &TcpSt
     let mut buf = [0];
     let mut buf_arr = [0; 1024];
     let mut index = 0;
+    let mut req = RequestStruct::new();
     let mut res = ResponseStruct::new();
     // FIXME 切断のエラーをキャッチしたい。
     loop {
@@ -166,7 +193,9 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &TcpSt
                     //  クライアントからの入力を、呼び出し側に処理させる。
                     // ****************************************************************************************************
                     // println!("S2>{} {}", connection_number, line);
-                    (server.receiver)(connection_number, &line, &mut res);
+                    req.connection_number = connection_number;
+                    req.message = line.to_string();
+                    (server.receiver)(&mut req, &mut res);
 
                     // 何か応答したい。
                     println!(
@@ -174,7 +203,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &TcpSt
                         connection_number, res.message, line
                     );
                     // クリアー。
-                    // res.message = "".to_string();
+                    res.message = "".to_string();
 
                     index = 0;
                 }
