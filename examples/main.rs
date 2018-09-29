@@ -27,14 +27,13 @@ use kifuwarabe_server::*;
 const CONNECTION_STRING: &str = "127.0.0.1:4081";
 
 fn main() {
-    // let _server_var = ServerVar::new();
-    // Server::new();
 
     let server = &Server {
         receiver: default_receiver,
     };
 
     listen(&server, CONNECTION_STRING);
+    // サーバーは、[Ctrl]+[C]キーで強制終了しろだぜ☆（＾～＾）
 }
 
 /**

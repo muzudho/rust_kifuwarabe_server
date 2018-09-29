@@ -9,8 +9,10 @@ use std::io::Write;
 /// # コマンド例。
 ///
 /// ```
-/// ### コンパイル(開発中)。 [Windows]+[R]キー, "cmd"+[Enter]。
+/// ### [Windows]+[R]キー, "cmd"+[Enter]。
 /// cd C:\MuzudhoDrive\projects_rust\rust_kifuwarabe_shogi_server
+/// 
+/// ### コンパイル(開発中)。 
 /// cargo clippy
 ///
 /// ### コンパイル(リリース用)。
@@ -32,21 +34,29 @@ use std::time::Duration; // https://stackoverflow.com/questions/33687447/how-to-
 pub mod interfaces;
 use interfaces::*;
 
-/// クライアントの変数。
-struct ClientVar {}
+/// クライアント１つに１つずつ割り当てる変数。
+#[derive(Default)]
+pub struct ClientVar {
+    /// 汎用的に利用できるハッシュマップ。
+    #[allow(dead_code)]
+    properties: HashMap<String, String>,
+}
 impl ClientVar {
     pub fn new() -> ClientVar {
-        ClientVar {}
+        ClientVar {
+            properties: HashMap::new(),
+        }
     }
 }
 
 // グローバル変数。
 use std::sync::RwLock;
 lazy_static! {
-    /// スレッド間で共有する。 <接続番号,変数>
-    static ref CLIENT_MAP: RwLock<HashMap<i64, ClientVar>> = RwLock::new(HashMap::new());
+    /// クライアントを超えて共有する。 <接続番号,変数>
+    pub static ref CLIENT_MAP: RwLock<HashMap<i64, ClientVar>> = RwLock::new(HashMap::new());
 }
 
+/// このアプリケーションのオプション。
 pub struct Server {
     pub receiver: Receiver,
 }
@@ -89,6 +99,7 @@ impl Request for RequestStruct {
 }
 
 /// レスポンス。
+#[derive(Default)]
 pub struct ResponseStruct {
     pub message: String,
 }
@@ -125,10 +136,13 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
         let mut connection_number = 0;
         let sever_listener = TcpListener::bind(connection_str).unwrap();
         for stream_wrap in sever_listener.incoming() {
+
+            // クライアントごとの変数を割り当てる。
             CLIENT_MAP
                 .try_write()
                 .unwrap()
                 .insert(connection_number, ClientVar::new());
+
             // さらに別スレッド開始。
             thread::spawn(move || {
                 handle_client(server, connection_number, &mut stream_wrap.unwrap());
@@ -160,9 +174,6 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
 fn handle_client(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
     println!("S2> Welcome {}.", connection_number);
 
-    // TODO クライアント名を取得したい。
-    // let name = "Kifuwarabe"; // 仮
-
     // ブロックし続けないようにする。
     // let _ = stream.set_read_timeout(Some(Duration::new(10, 0)));
     stream
@@ -171,7 +182,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &mut T
 
     // 使いまわすもの。
     let mut buf = [0];
-    let mut buf_arr = [0; 1024];
+    let mut buf_arr = [0; 1024]; // FIXME 短くないか☆（＾～＾）？
     let mut index = 0;
     let mut req = RequestStruct::new();
     let mut res = ResponseStruct::new();
