@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::io;
 use std::io::Read;
+use std::io::Write;
 /// # 参考URL。
 /// - https://doc.rust-lang.org/std/net/struct.TcpStream.html |Struct std::net::TcpStream
 /// - https://gigazine.net/news/20120831-10000-jointer-1-server-cedec2012/ |サーバーマシン1台で同時接続者数1万名を実現するにはどうすればいいのかというノウハウと考え方
@@ -130,7 +131,7 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
                 .insert(connection_number, ClientVar::new());
             // さらに別スレッド開始。
             thread::spawn(move || {
-                handle_client(server, connection_number, &stream_wrap.unwrap());
+                handle_client(server, connection_number, &mut stream_wrap.unwrap());
             });
             connection_number += 1;
         }
@@ -156,7 +157,7 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
 }
 
 /// クライアントをずっと捕まえておく。
-fn handle_client(server: &'static Server, connection_number: i64, stream: &TcpStream) {
+fn handle_client(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
     println!("S2> Welcome {}.", connection_number);
 
     // TODO クライアント名を取得したい。
@@ -197,13 +198,12 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &TcpSt
                     req.message = line.to_string();
                     (server.receiver)(&mut req, &mut res);
 
-                    // 何か応答したい。
+                    /*
                     println!(
-                        "S2>{} message: [{}] line: [{}]",
-                        connection_number, res.message, line
+                         "S2>{} message: [{}] line: [{}]",
+                         connection_number, res.message, line
                     );
-                    // クリアー。
-                    res.message = "".to_string();
+                    */
 
                     index = 0;
                 }
@@ -219,6 +219,25 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &TcpSt
             }
             Err(e) => panic!("encountered IO error: {}", e),
         };
+
+        if res.message != "" {
+            println!(
+                    "S2>{} {}",
+                    connection_number, res.message
+            );
+            // 何か応答したい。
+            match stream.write(res.message.as_bytes()) {
+                Ok(_n) => {},
+                Err(e) => panic!("encountered IO error: {}", e),
+            }
+            match stream.flush(){
+                Ok(_n) => {},
+                Err(e) => panic!("encountered IO error: {}", e),
+            }
+
+            // クリアー。
+            res.message = "".to_string();
+        }
     }
 
     println!("S2> Bye {}.", connection_number);
