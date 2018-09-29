@@ -32,6 +32,13 @@ fn default_receiving(req: &Request, res: &mut Response) {
         _ => { println!("What!?"); }
     }
 }
+
+/**
+ * サーバーからクライアントへメッセージを送信できるタイミング。
+ */
+pub fn default_sending(_connection_number:i64, _res: &mut Response) {
+    // やることがなければ、何もしない。
+}
 ```
 
 というように、
@@ -74,8 +81,9 @@ fn main() {
 
     // サーバー構造体に、コールバック関数を登録していけだぜ。
     let server = &Server {
-        coming: default_coming,
-        receiving: default_receiving,
+        on_coming: default_coming,
+        on_receiving: default_receiving,
+        on_sending: default_sending,
     };
 
     // 静的に、受信ポートを開いて待機。

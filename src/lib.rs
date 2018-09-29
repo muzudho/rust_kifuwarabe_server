@@ -29,8 +29,8 @@ use std::net::{TcpListener, TcpStream};
 use std::{thread, time};
 #[macro_use]
 extern crate lazy_static;
-use std::any::Any;
-use std::time::Duration; // https://stackoverflow.com/questions/33687447/how-to-get-a-struct-reference-from-a-boxed-trait
+use std::any::Any; // https://stackoverflow.com/questions/33687447/how-to-get-a-struct-reference-from-a-boxed-trait
+
 
 pub mod interfaces;
 use interfaces::*;
@@ -59,14 +59,16 @@ lazy_static! {
 
 /// このアプリケーションのオプション。
 pub struct Server {
-    pub coming: ComingFn,
-    pub receiving: ReceivingFn,
+    pub on_coming: ComingFn,
+    pub on_receiving: ReceivingFn,
+    pub on_sending: SendingFn,
 }
 impl Server {
     pub fn new() -> Server {
         Server {
-            coming: empty_coming,
-            receiving: empty_receiving,
+            on_coming: empty_coming,
+            on_receiving: empty_receiving,
+            on_sending: empty_sending,
         }
     }
 }
@@ -153,36 +155,12 @@ pub fn listen_incoming (server: &'static Server, connection_str: &'static str) {
     });
 }
 
-/*
-pub fn listen(server: &'static Server, connection_str: &'static str) {
-    // println!("I am a server!");
-
-    // 各クライアントに何かしたいことがあれば 以下に書く。
-    loop {
-        /*
-        let mut count = 0;
-        match CLIENT_MAP.try_read() {
-            Ok(client_map) => {
-                for (_connection_number, _client_var) in client_map.iter() {
-                    count += 1;
-                }
-            },
-            Err(_) => unreachable!(),
-        };
-        println!("count = {}", count);
-        */
-        thread::sleep(Duration::from_millis(1));
-    }
-    // サーバーは、[Ctrl]+[C]キーで強制終了しろだぜ☆（＾～＾）
-}
- */
-
 /// クライアントをずっと捕まえておく。
 fn handle_client(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
     // ****************************************************************************************************
     //  クライアントからの入力を、呼び出し側に処理させる。
     // ****************************************************************************************************
-    (server.coming)(connection_number);
+    (server.on_coming)(connection_number);
 
     println!("S2> Welcome {}.", connection_number);
 
@@ -219,7 +197,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &mut T
                     // println!("S2>{} {}", connection_number, line);
                     req.connection_number = connection_number;
                     req.message = line.to_string();
-                    (server.receiving)(&mut req, &mut res);
+                    (server.on_receiving)(&mut req, &mut res);
 
                     /*
                     println!(
@@ -243,25 +221,38 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &mut T
             Err(e) => panic!("encountered IO error: {}", e),
         };
 
-        if res.message != "" {
-            println!(
-                    "S2>{} {}",
-                    connection_number, res.message
-            );
-            // 何か応答したい。
-            match stream.write(res.message.as_bytes()) {
-                Ok(_n) => {},
-                Err(e) => panic!("encountered IO error: {}", e),
-            }
-            match stream.flush(){
-                Ok(_n) => {},
-                Err(e) => panic!("encountered IO error: {}", e),
-            }
+        // 応答。
+        on_response(connection_number, &mut res, stream);
 
-            // クリアー。
-            res.message = "".to_string();
-        }
+        // ****************************************************************************************************
+        //  サーバーからクライアントへメッセージを送信する。
+        // ****************************************************************************************************
+        (server.on_sending)(connection_number, &mut res);
+
+        // 一方的送信。
+        on_response(connection_number, &mut res, stream);
     }
 
     println!("S2> Bye {}.", connection_number);
+}
+
+fn on_response(connection_number: i64, res: &mut ResponseStruct, stream: &mut TcpStream) {
+    if res.message != "" {
+        println!(
+                "S2>{} {}",
+                connection_number, res.message
+        );
+        // 何か応答したい。
+        match stream.write(res.message.as_bytes()) {
+            Ok(_n) => {},
+            Err(e) => panic!("encountered IO error: {}", e),
+        }
+        match stream.flush(){
+            Ok(_n) => {},
+            Err(e) => panic!("encountered IO error: {}", e),
+        }
+
+        // フラグ クリアー。
+        res.message = "".to_string();
+    }
 }

@@ -6,6 +6,7 @@
 ///
 /// ```
 /// ### [Windows]+[R]キー, "cmd"+[Enter]。
+/// cls
 /// cd C:\MuzudhoDrive\projects_rust\rust_kifuwarabe_server
 ///
 /// ### コンパイル。
@@ -31,8 +32,9 @@ const CONNECTION_STRING: &str = "127.0.0.1:4081";
 fn main() {
 
     let server = &Server {
-        coming: default_coming,
-        receiving: default_receiving,
+        on_coming: default_coming,
+        on_receiving: default_receiving,
+        on_sending: default_sending,
     };
 
     // 静的に、受信ポートを開いて待機。
@@ -63,4 +65,11 @@ fn default_receiving(req: &Request, res: &mut Response) {
             println!("<{} Not match: [{}]", req.get_connection_number(), req.get_message());
         }
     }
+}
+
+/**
+ * サーバーからクライアントへメッセージを送信できるタイミング。
+ */
+pub fn default_sending(_connection_number:i64, _res: &mut Response) {
+    // やることがなければ、何もしない。
 }
