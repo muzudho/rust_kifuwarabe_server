@@ -1,11 +1,19 @@
 use std::any::Any; // https://stackoverflow.com/questions/33687447/how-to-get-a-struct-reference-from-a-boxed-trait
 
 /**
+ * クライアントから接続があったときのコールバック。
+ */
+pub type ComingFn = fn(connection_number:i64);
+/**
  * メッセージ受信。
  */
-pub type Receiver = fn(req: &Request, res: &mut Response);
+pub type ReceivingFn = fn(req: &Request, res: &mut Response);
 
-pub fn empty_receiver(req: &Request, _res: &mut Response) {
+pub fn empty_coming(connection_number:i64) {
+    println!("empty_coming<{}", connection_number);
+}
+
+pub fn empty_receiving(req: &Request, _res: &mut Response) {
     println!("empty_receiver<{} {}", req.get_connection_number(), req.get_message());
 }
 

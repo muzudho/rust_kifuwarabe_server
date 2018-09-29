@@ -29,7 +29,8 @@ const CONNECTION_STRING: &str = "127.0.0.1:4081";
 fn main() {
 
     let server = &Server {
-        receiver: default_receiver,
+        coming: default_coming,
+        receiving: default_receiving,
     };
 
     listen(&server, CONNECTION_STRING);
@@ -37,9 +38,16 @@ fn main() {
 }
 
 /**
- * クライアントからの入力は このメソッド内で処理する。
+ * クライアントからの接続があったとき、その接続に番号を振る。
  */
-fn default_receiver(req: &Request, res: &mut Response) {
+fn default_coming(connection_number:i64) {
+    println!("default_coming: Welcome {}!", connection_number);
+}
+
+/**
+ * クライアントからの入力を受け取り、応答を返す。
+ */
+fn default_receiving(req: &Request, res: &mut Response) {
     println!("<{} {}", req.get_connection_number(), req.get_message());
 
     match req.get_message() {

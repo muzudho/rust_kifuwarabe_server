@@ -58,12 +58,14 @@ lazy_static! {
 
 /// このアプリケーションのオプション。
 pub struct Server {
-    pub receiver: Receiver,
+    pub coming: ComingFn,
+    pub receiving: ReceivingFn,
 }
 impl Server {
     pub fn new() -> Server {
         Server {
-            receiver: empty_receiver,
+            coming: empty_coming,
+            receiving: empty_receiving,
         }
     }
 }
@@ -172,6 +174,11 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
 
 /// クライアントをずっと捕まえておく。
 fn handle_client(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
+    // ****************************************************************************************************
+    //  クライアントからの入力を、呼び出し側に処理させる。
+    // ****************************************************************************************************
+    (server.coming)(connection_number);
+
     println!("S2> Welcome {}.", connection_number);
 
     // ブロックし続けないようにする。
@@ -207,7 +214,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &mut T
                     // println!("S2>{} {}", connection_number, line);
                     req.connection_number = connection_number;
                     req.message = line.to_string();
-                    (server.receiver)(&mut req, &mut res);
+                    (server.receiving)(&mut req, &mut res);
 
                     /*
                     println!(
