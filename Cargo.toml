@@ -1,0 +1,6 @@
+[package]
+name = "rust_kifuwarabe_server"
+version = "0.1.0"
+authors = ["むずでょ <muzudho1@gmail.com>"]
+
+[dependencies]
