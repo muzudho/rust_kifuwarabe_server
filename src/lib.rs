@@ -10,7 +10,8 @@ use std::io::Write;
 ///
 /// ```
 /// ### [Windows]+[R]キー, "cmd"+[Enter]。
-/// cd C:\MuzudhoDrive\projects_rust\rust_kifuwarabe_shogi_server
+/// cls
+/// cd C:\MuzudhoDrive\projects_rust\rust_kifuwarabe_server
 /// 
 /// ### コンパイル(開発中)。 
 /// cargo clippy
@@ -127,14 +128,12 @@ impl Response for ResponseStruct {
 }
 
 /**
- * 静的に、受信ポートを開いて待機します。
+ * 静的に、受信ポートを開いてクライアントからの接続を待機。
  */
-pub fn listen(server: &'static Server, connection_str: &'static str) {
-    // println!("I am a server!");
-
+pub fn listen_incoming (server: &'static Server, connection_str: &'static str) {
     // 接続受付スレッド。
     thread::spawn(move || {
-        println!("S> Listen!!");
+        println!("S> Wait for connection from client."); // メッセージを出さないと、何をしているのか分からない。
         let mut connection_number = 0;
         let sever_listener = TcpListener::bind(connection_str).unwrap();
         for stream_wrap in sever_listener.incoming() {
@@ -152,6 +151,11 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
             connection_number += 1;
         }
     });
+}
+
+/*
+pub fn listen(server: &'static Server, connection_str: &'static str) {
+    // println!("I am a server!");
 
     // 各クライアントに何かしたいことがあれば 以下に書く。
     loop {
@@ -171,6 +175,7 @@ pub fn listen(server: &'static Server, connection_str: &'static str) {
     }
     // サーバーは、[Ctrl]+[C]キーで強制終了しろだぜ☆（＾～＾）
 }
+ */
 
 /// クライアントをずっと捕まえておく。
 fn handle_client(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
