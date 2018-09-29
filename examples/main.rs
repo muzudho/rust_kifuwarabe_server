@@ -26,6 +26,42 @@ use kifuwarabe_server::*;
 
 const CONNECTION_STRING: &str = "127.0.0.1:4081";
 
-fn main(){
-    listen(CONNECTION_STRING);
+/*
+struct ServerVar {
+
 }
+impl ServerVar {
+    pub fn new() -> ServerVar {
+        ServerVar {
+
+        }
+    }
+}
+*/
+
+fn main(){
+
+    // let _server_var = ServerVar::new();
+
+    let server = // Server::new();
+    &Server {
+        receiver: default_receiver
+    };
+
+    listen(&server, CONNECTION_STRING);
+}
+
+/**
+ * クライアントからの入力は このメソッド内で処理する。
+ */
+fn default_receiver(connection_number:i64, message:&str) {
+   println!("<{} {}", connection_number, message);
+
+    match message {
+        "LOGIN kifuwarabe a" => , // LOGIN:<username> OK
+        _ => ,
+    }
+
+}
+
+

@@ -45,27 +45,28 @@ lazy_static! {
 /**
  * メッセージ受信。
  */
-pub type Receiver<T> = fn(t:&mut T, connection_number:i64, message:&str);
+pub type Receiver = fn(connection_number:i64, message:&str); //<T> t:&mut T, 
 
-fn empty_receiver<T>(_t:&mut T, _connection_number:i64, _message:&str) {
+fn empty_receiver(_connection_number:i64, _message:&str) { //<T> _t:&mut T, 
 
 }
 
-pub struct Server<T> {
-    receiver: Receiver<T>
+pub struct Server { // <T>
+    //pub t: T,
+    pub receiver: Receiver,//<T>
 }
-impl<T> Server<T> {
-    pub fn new() -> Server<T>{
-        Server::<T>{
+impl Server {//<T><T>
+    pub fn new() -> Server{
+        Server{
             receiver: empty_receiver
         }
     }
 }
 
 /**
- * 受信ポートを開いて待機します。
+ * 静的に、受信ポートを開いて待機します。
  */
-pub fn listen(connection_str: &'static str) {
+pub fn listen(server:&'static Server, connection_str: &'static str) { // <T>
     // println!("I am a server!");
 
     // 接続受付スレッド。
@@ -78,9 +79,9 @@ pub fn listen(connection_str: &'static str) {
                 .try_write()
                 .unwrap()
                 .insert(connection_number, ClientVar::new());
+            // さらに別スレッド開始。
             thread::spawn(move || {
-                println!("L> Welcome!");
-                handle_client(connection_number, &stream_wrap.unwrap());
+                handle_client(server, connection_number, &stream_wrap.unwrap());
             });
             connection_number += 1;
         }
@@ -106,8 +107,8 @@ pub fn listen(connection_str: &'static str) {
 }
 
 /// クライアントをずっと捕まえておく。
-fn handle_client(connection_number: i64, stream: &TcpStream) {
-    println!("Capture client. {}", connection_number);
+fn handle_client(server:&'static Server, connection_number: i64, stream: &TcpStream) {
+    println!("S2> Welcome {}.", connection_number);
 
     // TODO クライアント名を取得したい。
     // let name = "Kifuwarabe"; // 仮
@@ -134,7 +135,13 @@ fn handle_client(connection_number: i64, stream: &TcpStream) {
                 index += 1;
                 if buf[0] == b'\n' {
                     let line = String::from_utf8_lossy(&buf_arr[0..index]);
-                    print!("{}> {}", connection_number, line); // 改行は line に入っている。
+
+                    // ****************************************************************************************************
+                    //  クライアントからの入力を、呼び出し側に処理させる。
+                    // ****************************************************************************************************
+                    // print!("S2>{} {}", connection_number, line); // 改行は line に入っている。
+                    (server.receiver)(connection_number, &line);
+                    
                     index = 0;
                 }
 
