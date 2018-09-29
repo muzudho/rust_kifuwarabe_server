@@ -60,6 +60,8 @@ rev は Git hub を見て新しいのを入れろだぜ☆（＾～＾）
 extern crate kifuwarabe_server;
 use kifuwarabe_server::interfaces::*;
 use kifuwarabe_server::*;
+use std::thread;
+use std::time::Duration;
 ```
 
 ## 実行。
@@ -76,7 +78,12 @@ fn main() {
         receiving: default_receiving,
     };
 
-    listen(&server, CONNECTION_STRING);
+    // 静的に、受信ポートを開いて待機。
+    listen_incoming(&server, CONNECTION_STRING);
+
+    loop {
+        thread::sleep(Duration::from_millis(1));
+    }
     // サーバーは、[Ctrl]+[C]キーで強制終了しろだぜ☆（＾～＾）
 }
 ```
