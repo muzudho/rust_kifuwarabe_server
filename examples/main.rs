@@ -27,14 +27,15 @@ use kifuwarabe_server::*;
 use std::thread;
 use std::time::Duration;
 
+/// 例: 将棋サーバー。
 const CONNECTION_STRING: &str = "127.0.0.1:4081";
 
 fn main() {
 
     let server = &Server {
-        on_coming: default_coming,
-        on_receiving: default_receiving,
-        on_sending: default_sending,
+        on_coming: on_coming_default,
+        on_receiving: on_receiving_default,
+        on_sending: on_sending_default,
     };
 
     // 静的に、受信ポートを開いて待機。
@@ -49,14 +50,14 @@ fn main() {
 /**
  * クライアントからの接続があったとき、その接続に番号を振る。
  */
-fn default_coming(connection_number:i64) {
-    println!("default_coming: Welcome {}!", connection_number);
+fn on_coming_default(connection_number:i64) {
+    println!("Welcome {}!", connection_number);
 }
 
 /**
  * クライアントからの入力を受け取り、応答を返す。
  */
-fn default_receiving(req: &Request, res: &mut Response) {
+fn on_receiving_default(req: &Request, res: &mut Response) {
     println!("<{} {}", req.get_connection_number(), req.get_message());
 
     match req.get_message() {
@@ -70,6 +71,6 @@ fn default_receiving(req: &Request, res: &mut Response) {
 /**
  * サーバーからクライアントへメッセージを送信できるタイミング。
  */
-pub fn default_sending(_connection_number:i64, _res: &mut Response) {
+pub fn on_sending_default(_connection_number:i64, _res: &mut Response) {
     // やることがなければ、何もしない。
 }

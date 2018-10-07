@@ -3,26 +3,26 @@ use std::any::Any; // https://stackoverflow.com/questions/33687447/how-to-get-a-
 /**
  * クライアントから接続があったときのコールバック。
  */
-pub type ComingFn = fn(connection_number:i64);
+pub type OnComingFn = fn(connection_number:i64);
 /**
  * メッセージ受信。
  */
-pub type ReceivingFn = fn(req: &Request, res: &mut Response);
+pub type OnReceivingFn = fn(req: &Request, res: &mut Response);
 /**
  * サーバーからクライアントへメッセージを送信できるタイミング。
  */
-pub type SendingFn = fn(connection_number:i64, res: &mut Response);
+pub type OnSendingFn = fn(connection_number:i64, res: &mut Response);
 
-pub fn empty_coming(connection_number:i64) {
-    println!("empty_coming<{}", connection_number);
+pub fn on_coming_empty(connection_number:i64) {
+    println!("on_coming_empty<{}", connection_number);
 }
 
-pub fn empty_receiving(req: &Request, _res: &mut Response) {
-    println!("empty_receiver<{} {}", req.get_connection_number(), req.get_message());
+pub fn on_receiving_empty(req: &Request, _res: &mut Response) {
+    println!("on_receiving_empty<{} {}", req.get_connection_number(), req.get_message());
 }
 
-pub fn empty_sending(connection_number:i64, _res: &mut Response) {
-    println!("empty_sending<{}", connection_number);
+pub fn on_sending_empty(connection_number:i64, _res: &mut Response) {
+    println!("on_sending_empty<{}", connection_number);
 }
 
 pub trait Request {

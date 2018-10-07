@@ -59,16 +59,16 @@ lazy_static! {
 
 /// このアプリケーションのオプション。
 pub struct Server {
-    pub on_coming: ComingFn,
-    pub on_receiving: ReceivingFn,
-    pub on_sending: SendingFn,
+    pub on_coming: OnComingFn,
+    pub on_receiving: OnReceivingFn,
+    pub on_sending: OnSendingFn,
 }
 impl Server {
     pub fn new() -> Server {
         Server {
-            on_coming: empty_coming,
-            on_receiving: empty_receiving,
-            on_sending: empty_sending,
+            on_coming: on_coming_empty,
+            on_receiving: on_receiving_empty,
+            on_sending: on_sending_empty,
         }
     }
 }
