@@ -7,22 +7,26 @@ pub type OnComingFn = fn(connection_number:i64);
 /**
  * メッセージ受信。
  */
-pub type OnReceivingFn = fn(req: &Request, res: &mut Response);
+pub type OnReceivedFromClientFn = fn(req: &Request, res: &mut Response);
 /**
  * サーバーからクライアントへメッセージを送信できるタイミング。
  */
-pub type OnSendingFn = fn(connection_number:i64, res: &mut Response);
+pub type OnSendToClientFn = fn(connection_number:i64, res: &mut Response);
+/**
+ * サーバーが何か処理をするタイミング。
+ */
+pub type OnServerSteppedFn = fn();
 
 pub fn on_coming_empty(connection_number:i64) {
     println!("on_coming_empty<{}", connection_number);
 }
 
-pub fn on_receiving_empty(req: &Request, _res: &mut Response) {
-    println!("on_receiving_empty<{} {}", req.get_connection_number(), req.get_message());
+pub fn on_received_from_client_empty(req: &Request, _res: &mut Response) {
+    println!("on_received_from_client_empty<{} {}", req.get_connection_number(), req.get_message());
 }
 
-pub fn on_sending_empty(connection_number:i64, _res: &mut Response) {
-    println!("on_sending_empty<{}", connection_number);
+pub fn on_send_to_client_empty(connection_number:i64, _res: &mut Response) {
+    println!("on_send_to_client_empty<{}", connection_number);
 }
 
 pub trait Request {

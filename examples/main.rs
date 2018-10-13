@@ -34,13 +34,14 @@ fn main() {
 
     let server = &Server {
         on_coming: on_coming_default,
-        on_receiving: on_receiving_default,
-        on_sending: on_sending_default,
+        on_received_from_client: on_received_from_client_default,
+        on_send_to_client: on_send_to_client_default,
     };
 
     // 静的に、受信ポートを開いて待機。
     listen_incoming(&server, CONNECTION_STRING);
 
+    // サーバーのループは自分で作れだぜ☆（＾～＾）
     loop {
         thread::sleep(Duration::from_millis(1));
     }
@@ -57,7 +58,7 @@ fn on_coming_default(connection_number:i64) {
 /**
  * クライアントからの入力を受け取り、応答を返す。
  */
-fn on_receiving_default(req: &Request, res: &mut Response) {
+fn on_received_from_client_default(req: &Request, res: &mut Response) {
     println!("<{} {}", req.get_connection_number(), req.get_message());
 
     match req.get_message() {
@@ -71,6 +72,6 @@ fn on_receiving_default(req: &Request, res: &mut Response) {
 /**
  * サーバーからクライアントへメッセージを送信できるタイミング。
  */
-pub fn on_sending_default(_connection_number:i64, _res: &mut Response) {
+pub fn on_send_to_client_default(_connection_number:i64, _res: &mut Response) {
     // やることがなければ、何もしない。
 }

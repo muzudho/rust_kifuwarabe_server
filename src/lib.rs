@@ -36,6 +36,7 @@ pub mod interfaces;
 use interfaces::*;
 
 /// クライアント１つに１つずつ割り当てる変数。
+/// FIXME 使わないなら消すかも。
 #[derive(Default)]
 pub struct ClientVar {
     /// 汎用的に利用できるハッシュマップ。
@@ -60,15 +61,15 @@ lazy_static! {
 /// このアプリケーションのオプション。
 pub struct Server {
     pub on_coming: OnComingFn,
-    pub on_receiving: OnReceivingFn,
-    pub on_sending: OnSendingFn,
+    pub on_received_from_client: OnReceivedFromClientFn,
+    pub on_send_to_client: OnSendToClientFn,
 }
 impl Server {
     pub fn new() -> Server {
         Server {
             on_coming: on_coming_empty,
-            on_receiving: on_receiving_empty,
-            on_sending: on_sending_empty,
+            on_received_from_client: on_received_from_client_empty,
+            on_send_to_client: on_send_to_client_empty,
         }
     }
 }
@@ -148,15 +149,15 @@ pub fn listen_incoming (server: &'static Server, connection_str: &'static str) {
 
             // さらに別スレッド開始。
             thread::spawn(move || {
-                handle_client(server, connection_number, &mut stream_wrap.unwrap());
+                run_client_thread(server, connection_number, &mut stream_wrap.unwrap());
             });
             connection_number += 1;
         }
     });
 }
 
-/// クライアントをずっと捕まえておく。
-fn handle_client(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
+/// クライアントの接続ごとに立てられるスレッド。
+fn run_client_thread(server: &'static Server, connection_number: i64, stream: &mut TcpStream) {
     // ****************************************************************************************************
     //  クライアントからの入力を、呼び出し側に処理させる。
     // ****************************************************************************************************
@@ -197,7 +198,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &mut T
                     // println!("S2>{} {}", connection_number, line);
                     req.connection_number = connection_number;
                     req.message = line.to_string();
-                    (server.on_receiving)(&mut req, &mut res);
+                    (server.on_received_from_client)(&mut req, &mut res);
 
                     /*
                     println!(
@@ -227,7 +228,7 @@ fn handle_client(server: &'static Server, connection_number: i64, stream: &mut T
         // ****************************************************************************************************
         //  サーバーからクライアントへメッセージを送信する。
         // ****************************************************************************************************
-        (server.on_sending)(connection_number, &mut res);
+        (server.on_send_to_client)(connection_number, &mut res);
 
         // 一方的送信。
         on_response(connection_number, &mut res, stream);

@@ -13,8 +13,8 @@
 次のことを やってくれるライブラリだぜ。
 
 - (1) on_coming: クライアントに一意の connection-number (連番)を振る。i64型。
-- (2) on_receiving: クライアントから受け取ったメッセージを処理できる コールバック関数を１つ提供。
-- (3) on_sending: サーバーからクライアントにメッセージを送るための コールバック関数を１つ提供。
+- (2) on_received_from_client: クライアントから受け取ったメッセージを処理できる コールバック関数を１つ提供。
+- (3) on_send_to_client: サーバーからクライアントにメッセージを送るための コールバック関数を１つ提供。
 
 ソースの例。
 
@@ -31,7 +31,7 @@ fn on_coming_default(connection_number:i64) {
 /**
  * (2) クライアントからの入力を受け取り、応答を返す。
  */
-fn on_receiving_default(req: &Request, res: &mut Response) {
+fn on_received_from_client_default(req: &Request, res: &mut Response) {
     println!("{} by No.{}.", req.get_message(), req.get_connection_number());
 
     // ここで ごりごり パーサーを書く。
@@ -44,7 +44,7 @@ fn on_receiving_default(req: &Request, res: &mut Response) {
 /**
  * (3) サーバーからクライアントへメッセージを送信できるタイミング。
  */
-pub fn on_sending_default(_connection_number:i64, _res: &mut Response) {
+pub fn on_send_to_client_default(_connection_number:i64, _res: &mut Response) {
     // やることがなければ、何もしない。
 }
 ```
@@ -90,8 +90,8 @@ fn main() {
     // (2) サーバー構造体に、コールバック関数を登録していけだぜ。
     let server = &Server {
         on_coming: on_coming_default,
-        on_receiving: on_receiving_default,
-        on_sending: on_sending_default,
+        on_received_from_client: on_received_from_client_default,
+        on_send_to_client: on_send_to_client_default,
     };
 
 }
