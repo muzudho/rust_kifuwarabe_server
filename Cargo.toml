@@ -1,7 +1,20 @@
 [package]
-name = "kifuwarabe_server"
+name = "rust_kifuwarabe_shogi_server"
 version = "0.1.0"
 authors = ["むずでょ <muzudho1@gmail.com>"]
 
 [dependencies]
 lazy_static = "1.1.0"
+serde_json = "1.0"
+
+[dependencies.kifuwarabe_server]
+git = "https://github.com/muzudho/rust_kifuwarabe_server.git"
+rev = "418539a79d68a5e7abd2fa5e4cca91efe38aa2ea"
+
+[dependencies.kifuwarabe_shell]
+git = "https://github.com/muzudho/rust_kifuwarabe_shell.git"
+rev = "c9444de505790fd08cacc306761fa4a765262c4d"
+
+[dependencies.kifuwarabe_state_transition_diagram]
+git = "https://github.com/muzudho/rust_kifuwarabe_state_transition_diagram.git"
+rev = "aede7bdfe0925a4c260ac19c6355d64469be9b50"

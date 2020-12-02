@@ -1,0 +1,61 @@
+{
+	"entry_point": "HEAD.entrance",
+	"nodes" : [
+		{
+			"label": "HEAD.entrance",
+			"exit": {
+				"#next": [
+					"login.head"
+				]
+			}
+		},
+		{
+			"label": "login.head",
+			"token": "LOGIN",
+			"exit": {
+				"#next": [
+					"login.player-name"
+				]
+			}
+		},
+		{
+			"label": "login.player-name",
+			"regex": "([^\\s]+)",
+			"fn": "do_player_name",
+			"exit": {
+				"#next": [
+					"login.password"
+				]
+			}
+		},
+		{
+			"label": "login.password",
+			"regex": "([^\\s]+)",
+			"fn": "do_password",
+			"exit": {
+				"#newline": [
+					"login.TAIL"
+				]
+			}
+		},
+		{
+			"label": "login.TAIL",
+			"exit": {
+				"#next": [
+					"WAIT-FOR.matching"
+				]
+			}
+		},
+		{
+			"label": "WAIT-FOR.matching",
+			"exit": {
+				"matching": [
+					"HEAD.agree"
+				]
+			}
+		},
+		{
+			"label": "HEAD.agree"
+		}
+    ]
+}
